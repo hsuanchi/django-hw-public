@@ -1,0 +1,57 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Umart</title>
+    <link rel="shortcut icon" href="{% static 'basic/img/favicon.ico' %}"/>
+
+    <!-- bootstrap.css -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.5.0/css/bootstrap4-toggle.min.css"
+        rel="stylesheet">
+
+    <style>
+        ion-icon {
+            font-size: 32px;
+            color: #6c757d;
+            cursor: pointer;
+          }
+        * {
+            box-sizing: border-box;
+        }
+
+        .icon_table {
+            border: 100;
+        }
+    </style>
+</head>
+<body>
+ <!-- sweetalert.js -->
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+
+<!-- jquery.js -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<!-- axios.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+
+<script>
+    var csrf = '{{csrf_token}}'
+</script>
+
+    {% block content %}
+    {% endblock content %}
+
+<!-- bootstrap.js -->
+<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.5.0/js/bootstrap4-toggle.min.js"></script>
+
+<!-- ionicons.js -->
+<script src="https://unpkg.com/ionicons@5.4.0/dist/ionicons.js"></script>
+
+</body>
+</html>

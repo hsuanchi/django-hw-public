@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  app:
+    build: ./app
+    container_name: django-remote
+    restart: always
+    env_file:
+      - ./app/django-local.env
+    volumes:
+      - ./app:/app
+    # command:
+    #   "gunicorn --workers=2 --bind=0.0.0.0:8000 app.wsgi:application"
+    # ports:
+    #   - "8000:8000"
+    command: /bin/sh -c "while sleep 1000; do :; done"
+    
+  # nginx:
+  #   build: ./nginx
+  #   container_name: ngx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   depends_on:
+  #     - app

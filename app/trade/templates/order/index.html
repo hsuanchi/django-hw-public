@@ -1,0 +1,222 @@
+   {% extends 'order/base.html' %}
+   
+   {% block content %} 
+    <section id="creatProductInfo">
+        <div class='container'>
+            <div class='col-12 mt-3'>
+                <form id="productDetail" method="POST" action="/api/orders/">
+                    <div class="form-row align-items-center">
+                        <div class="col-6 col-md-3 my-1" >
+                            <select class="custom-select" name="product_id" id="productSelect" required>
+                                <option value="" selected>Select Product</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2 my-1 mr-4" >
+                            <input type="number" min="1" name="qty" id="productQty" placeholder="數量" required>
+                        </div>
+                        <div class="col-6 col-md-2 my-1" >
+                            <button class="btn btn-link" type="submit">
+                                <ion-icon type="submit" name="add-circle-outline"></ion-icon>
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-4 my-1" >
+                            <input type="number" min="1" class="mt-1" id="productCid" name="customer_id" placeholder="Customer ID" required>
+                            <div class="custom-control custom-checkbox mt-1">
+                                <input type="hidden" name="vip" value="no">
+                                <input type="checkbox" class="custom-control-input" name="vip" id="customControlAutosizing" checked value="yes">
+                                <label class="custom-control-label" for="customControlAutosizing">是否為 vip 身份
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+    <section id="productInfo">
+        <div class='container'>
+            <div class='col-12 mt-3'>
+                <h4>商品列表</h4>
+                <div id='productList' class='row justify-content-center' style='text-align:center;'>
+            </div>
+        </div>
+    </section>
+    <section id="orderInfo">
+        <div class='container'>
+            <div class='col-12 mt-3'>
+                <h4>訂單記錄</h4>
+                <div id='orderList' class='row justify-content-center' style='text-align:center;'>
+                </div>
+            </div>
+        </section>
+        <section id="topSaleInfo">
+            <div class='container'>
+                <div class='col-12 my-3'>
+                    <button type="button" class="btn btn-outline-secondary" id="topSalesDetail">Top 3</button>
+                </div>
+            </div>
+    </section>
+    <script>
+        function renderProductSelectHtml(data){
+            var html = ``
+            for(i=0; i<data.length; i++){
+                html+=`<option value="${data[i]['id']}">${data[i]['id']}</option>`
+            }
+            return html
+        }
+
+        function renderProductListHtml(data){
+            var html = `<table class="table  table-striped"><thead><tr class="table-dark"><th>Product ID</th><th>stock_pcs</th><th>price</th><th>shop_id</th><th>vip</th></tr></thead><tbody>`
+    
+            for(i=0; i<data.length; i++){
+                html+=`<tr><td>${data[i]['id']}</td>
+                    <td>${data[i]['stock_pcs']}</td>
+                    <td>${data[i]['price']}</td>
+                    <td>${data[i]['shop_id']['shop_id']}</td>
+                    `
+                if(data[i]['vip']==true){
+                    html+= `
+                    <td><ion-icon name="checkbox-outline"></ion-icon></td>
+                    `
+                }else{
+                    html+=`
+                    <td><ion-icon name="stop-outline"></ion-icon></td>
+                    `
+                }
+            }
+            return html+` </tbody></table>`
+        };
+        
+        function renderdOrderListHtml(data){
+            var html = `<table class="table  table-striped"><thead><tr class="table-dark"><th>Order ID</th><th>product_id</th><th>qty</th><th>price</th><th>shop_id</th><th>Customer ID</th><th>action</th></tr></thead><tbody>`
+    
+            for(i=0; i<data.length; i++){
+                html+=`<tr><td>${data[i]['id']}</td>
+                    <td>${data[i]['product_id']}</td>
+                    <td>${data[i]['qty']}</td>
+                    <td>${data[i]['product_detail']['price']}</td>
+                    <td>${data[i]['product_detail']['shop_id']['shop_id']}</td>
+                    <td>${data[i]['customer_id']}</td><td ><ion-icon name="remove-circle-outline" onclick="deleteProduct(${data[i]['id']})"></ion-icon></td></tr>`
+            }
+            return html+` </tbody></table>`
+        };
+
+        function deleteProduct(orderID){
+            const data = {"order_id":orderID}
+            axios.defaults.headers = {
+                'X-CSRFToken': csrf,
+            }
+            axios.delete('/api/orders/', {data:data})
+            .then(response => {
+                if(response.data.message == '商品到貨'){
+                    Swal.fire({
+                        title: '商品到貨',
+                        text: 'success',
+                        type: 'success',
+                        onClose: () => {
+                            location.reload(true)
+                        }
+                    });
+                }else{
+                    Swal.fire({
+                        title: '刪除訂單',
+                        text: 'success',
+                        type: 'success',
+                        onClose: () => {
+                            location.reload(true)
+                        }
+                    });
+                }
+            })
+                .catch(error => {
+                    console.log(error)
+            })
+        }
+        
+        $(document).ready(function () {
+            //Append ProductList Html
+            $.ajax({
+                type: "GET",
+                url: "/api/products",
+                success: function (data) {
+                    const productList_html = renderProductListHtml(data)
+                    const productSelect_html = renderProductSelectHtml(data)
+                    $("#productList").append(productList_html)
+                    $("#productSelect").append(productSelect_html)
+                }
+            });
+            //Append OrderList Html
+            $.ajax({
+                type: "GET",
+                url: "/api/orders",
+                success: function (data) {
+                    const orderList_html = renderdOrderListHtml(data)
+                    $("#orderList").append(orderList_html)
+                }
+            });
+        });
+        
+
+        $("#topSalesDetail").on("click",function(){
+            axios.get("/api/orders/topsales/")
+            .then(response =>{
+                text = ""
+                for(i=0; i<response.data.length; i++){
+                    text += ` product_id: ${response.data[i]["product_id"]}`
+                }
+                console.log(response)
+                Swal.fire({
+                    title: "Top3 銷售詳情",
+                    text: text,
+                    type: "success",
+                });
+            })
+            .catch(error => {
+                console.log(error)
+            })
+        })
+
+        $("#productDetail").submit(function(e){
+            e.preventDefault();
+            
+            const data = $(this).serialize()
+            axios.post('/api/orders/', data, {
+                headers: {
+                    'X-CSRFToken': csrf
+                }
+            }).then(response => {
+                if(response.data.message == '貨源不足'){
+                    Swal.fire({
+                        title: '貨源不足',
+                        text: 'error',
+                        type: 'error',
+                        onClose: () => {
+                            location.reload(true)
+                        }
+                    });
+                } else if(response.data.message == '權限不足'){
+                    Swal.fire({
+                        title: '權限不足',
+                        text: 'error',
+                        type: 'error',
+                        onClose: () => {
+                            location.reload(true)
+                        }
+                    });
+                } else{
+                    Swal.fire({
+                        title: '訂單成立',
+                        text: 'success',
+                        type: 'success',
+                        onClose: () => {
+                            location.reload(true)
+                        }
+                    });
+                }
+                })
+                .catch(error => {
+                    console.log(error)
+            })
+        })
+    </script>
+{% endblock %}
