@@ -70,7 +70,7 @@ $ poetry shell
 $ python3 manager.py runserver
 ```
 
-## 單元測試
+## 3. 單元測試
 ```
 $ cd app
 $ python3 manager.py test
